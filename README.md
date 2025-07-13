@@ -4,7 +4,7 @@ This is a web-based application that allows students to book appointments with t
 
 ## Live Demo
 
-[Link to your deployed website will go here after you complete the deployment step]
+https://student-teacher-app-32220.web.app
 
 ## Features
 
