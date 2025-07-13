@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Unified Mentor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <h2>Admin Dashboard</h2>
+            <button id="logout-btn" class="btn btn-secondary">Logout</button>
+        </div>
+
+        <div class="dashboard-section">
+            <h3>Add Teacher</h3>
+            <form id="add-teacher-form" class="dashboard-form">
+                <input type="text" id="teacher-name" placeholder="Name" required>
+                <input type="text" id="teacher-department" placeholder="Department" required>
+                <input type="text" id="teacher-subject" placeholder="Subject" required>
+                <input type="email" id="teacher-email" placeholder="Email" required>
+                <input type="password" id="teacher-password" placeholder="Temporary Password" required>
+                <button type="submit" class="btn">Add Teacher</button>
+            </form>
+        </div>
+
+        <div class="dashboard-section">
+            <h3>Manage Teachers</h3>
+            <ul id="teachers-list" class="item-list">
+                </ul>
+        </div>
+        
+        <div class="dashboard-section">
+            <h3>Approve Student Registrations</h3>
+            <ul id="pending-students-list" class="item-list">
+                </ul>
+        </div>
+        <div id="message-box" class="hidden"></div>
+    </div>
+
+    <script type="module" src="js/admin.js"></script>
+</body>
+</html> 

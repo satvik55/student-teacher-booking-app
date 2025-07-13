@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - Unified Mentor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <h2 id="student-welcome">Welcome, Student</h2>
+            <button id="logout-btn" class="btn btn-secondary">Logout</button>
+        </div>
+
+        <div class="dashboard-section">
+            <h3>Search for a Teacher</h3>
+            <form id="search-teacher-form" class="dashboard-form">
+                <input type="text" id="teacher-search-input" placeholder="Search by name, subject, or department">
+                <button type="submit" class="btn">Search</button>
+            </form>
+        </div>
+
+        <div class="dashboard-section">
+            <h3>Search Results</h3>
+            <ul id="teacher-results-list" class="item-list">
+                <!-- Teacher search results will appear here -->
+            </ul>
+        </div>
+        
+        <div id="booking-section" class="dashboard-section hidden">
+            <h3 id="booking-header">Available Slots</h3>
+            <ul id="availability-list" class="item-list">
+                 <!-- Teacher availability will appear here -->
+            </ul>
+        </div>
+
+        <div class="dashboard-section">
+            <h3>Your Appointments</h3>
+            <ul id="my-appointments-list" class="item-list">
+                <!-- Student's appointments will appear here -->
+            </ul>
+        </div>
+        <div id="message-box" class="hidden"></div>
+    </div>
+
+    <script type="module" src="js/student.js"></script>
+</body>
+</html>
