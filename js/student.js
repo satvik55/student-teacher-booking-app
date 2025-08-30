@@ -1,6 +1,6 @@
 import { auth, db } from './firebase-config.js';
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-import { collection, addDoc, getDocs, where, query, doc, getDoc, Timestamp, orderBy } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { collection, addDoc, getDocs, where, query, doc, getDoc, Timestamp, orderBy, updateDoc, runTransaction } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
 const studentWelcome = document.getElementById('student-welcome');
 const searchTeacherForm = document.getElementById('search-teacher-form');
@@ -81,7 +81,7 @@ async function loadTeacherAvailability(teacher) {
     const today = new Date().toISOString().split('T')[0];
     const q = query(collection(db, "availability"), 
         where("teacherId", "==", teacher.id), 
-        where("booked", "==", false),
+        where("isBooked", "==", false),
         where("date", ">=", today),
         orderBy("date"));
 
@@ -108,7 +108,7 @@ async function loadTeacherAvailability(teacher) {
     });
 }
 
-// Book an appointment
+// Book an appointment using a Firestore Transaction
 async function bookAppointment(slot) {
     const purpose = prompt("What is the purpose of this appointment?");
     if (!purpose) {
@@ -116,21 +116,42 @@ async function bookAppointment(slot) {
         return;
     }
 
+    const slotRef = doc(db, 'availability', slot.id);
+
     try {
-        await addDoc(collection(db, 'appointments'), {
-            studentId: currentStudent.id,
-            teacherId: slot.teacherId,
-            availabilitySlotId: slot.id,
-            date: slot.date,
-            time: slot.startTime,
-            purpose: purpose,
-            status: 'pending' // Status can be 'pending', 'confirmed', 'cancelled'
+        await runTransaction(db, async (transaction) => {
+            const slotDoc = await transaction.get(slotRef);
+            if (!slotDoc.exists()) {
+                throw new Error("Slot does not exist!");
+            }
+            if (slotDoc.data().isBooked) {
+                throw new Error("This slot is already booked!");
+            }
+            
+            // Create the new appointment document
+            const newAppointmentRef = doc(collection(db, 'appointments'));
+            transaction.set(newAppointmentRef, {
+                studentId: currentStudent.id,
+                teacherId: slot.teacherId,
+                availabilitySlotId: slot.id,
+                date: slot.date,
+                time: slot.startTime,
+                purpose: purpose,
+                status: 'pending',
+                createdAt: Timestamp.now()
+            });
+
+            // Mark the availability slot as booked
+            transaction.update(slotRef, { isBooked: true });
         });
+
         showMessage('Appointment request sent successfully!', 'success');
         bookingSection.classList.add('hidden');
         loadMyAppointments();
+        
     } catch (error) {
-        showMessage('Failed to book appointment.', 'error');
+        console.error("Transaction failed: ", error);
+        showMessage('Failed to book appointment. Please try again.', 'error');
     }
 }
 
@@ -158,7 +179,6 @@ async function loadMyAppointments() {
         myAppointmentsList.appendChild(li);
     }
 }
-
 
 // Logout
 logoutBtn.addEventListener('click', () => {
