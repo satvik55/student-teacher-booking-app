@@ -72,62 +72,54 @@ searchTeacherForm.addEventListener('submit', async (e) => {
     }
 });
 
-// Load a specific teacher's available slots
 async function loadTeacherAvailability(teacher) {
     bookingHeader.textContent = `Available Slots for ${teacher.name}`;
     bookingSection.classList.remove('hidden');
     availabilityList.innerHTML = '<li>Loading slots...</li>';
-
     const today = new Date().toISOString().split('T')[0];
-    const q = query(collection(db, "availability"), 
-        where("teacherId", "==", teacher.id), 
-        where("isBooked", "==", false),
+    const q = query(collection(db, "availability"),
+        where("teacherId", "==", teacher.id),
+        where("booked", "==", false), // Corrected from "isBooked" to "booked"
         where("date", ">=", today),
         orderBy("date"));
-
     const querySnapshot = await getDocs(q);
-    
+
     availabilityList.innerHTML = '';
     if (querySnapshot.empty) {
         availabilityList.innerHTML = '<li>This teacher has no available slots.</li>';
         return;
     }
-
     querySnapshot.forEach((doc) => {
         const slot = {id: doc.id, ...doc.data()};
         const li = document.createElement('li');
         li.innerHTML = `<span>${slot.date} from ${slot.startTime} to ${slot.endTime}</span>`;
-        
+
         const bookBtn = document.createElement('button');
         bookBtn.textContent = 'Book';
         bookBtn.className = 'btn-small';
         bookBtn.onclick = () => bookAppointment(slot);
-
         li.appendChild(bookBtn);
         availabilityList.appendChild(li);
     });
 }
 
-// Book an appointment using a Firestore Transaction
 async function bookAppointment(slot) {
     const purpose = prompt("What is the purpose of this appointment?");
     if (!purpose) {
         showMessage('Booking cancelled. Purpose is required.', 'error');
         return;
     }
-
     const slotRef = doc(db, 'availability', slot.id);
-
     try {
         await runTransaction(db, async (transaction) => {
             const slotDoc = await transaction.get(slotRef);
             if (!slotDoc.exists()) {
                 throw new Error("Slot does not exist!");
             }
-            if (slotDoc.data().isBooked) {
+            if (slotDoc.data().booked) { // Corrected from "isBooked"
                 throw new Error("This slot is already booked!");
             }
-            
+
             // Create the new appointment document
             const newAppointmentRef = doc(collection(db, 'appointments'));
             transaction.set(newAppointmentRef, {
@@ -140,15 +132,13 @@ async function bookAppointment(slot) {
                 status: 'pending',
                 createdAt: Timestamp.now()
             });
-
             // Mark the availability slot as booked
-            transaction.update(slotRef, { isBooked: true });
+            transaction.update(slotRef, { booked: true }); // Corrected from "isBooked"
         });
-
         showMessage('Appointment request sent successfully!', 'success');
         bookingSection.classList.add('hidden');
         loadMyAppointments();
-        
+
     } catch (error) {
         console.error("Transaction failed: ", error);
         showMessage('Failed to book appointment. Please try again.', 'error');
